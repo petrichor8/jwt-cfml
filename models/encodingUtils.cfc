@@ -14,16 +14,13 @@ component output="false" {
     }
 
     function base64UrlToBinary( base64url ) {
-        var base64 = base64url.replace( '-', '+', 'all' ).replace( '_', '/', 'all' );
+        var base64 = replaceList( base64url, '-,_', '+,/' );
         var padded = base64 & repeatString( '=', 4 - ( len( base64 ) % 4 ) );
         return binaryDecode( padded, 'base64' );
     }
 
     function binaryToBase64Url( source ) {
-        return binaryEncode( source, 'base64' )
-            .replace( '+', '-', 'all' )
-            .replace( '/', '_', 'all' )
-            .replace( '=', '', 'all' );
+        return replaceList( binaryEncode( source, 'base64' ), "+,/,=", "-,_," );
     }
 
     /**
