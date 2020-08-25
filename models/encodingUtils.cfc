@@ -1,8 +1,8 @@
-component {
+component output="false" {
 
     public any function init() {
         variables.utcBaseDate = createObject( 'java', 'java.util.Date' ).init( javacast( 'int', 0 ) );
-        variables.ECParameterSpecCache = { };
+        variables.ECParameterSpecCache = {};
     }
 
     function convertDateToUnixTimestamp( required date dateToConvert ) {
@@ -113,9 +113,9 @@ component {
         if ( s[ 1 ] == 0 ) s = arraySlice( s, 2 );
 
         var lengthMap = {
-            ES256: 32,
-            ES384: 48,
-            ES512: 64
+            ES256 = 32,
+            ES384 = 48,
+            ES512 = 64
         };
 
         var P1363Signature = [ ];
