@@ -1,20 +1,20 @@
-component {
+component output = "false" {
 
     variables.algorithmMap = {
-        HS256: 'HmacSHA256',
-        HS384: 'HmacSHA384',
-        HS512: 'HmacSHA512',
-        RS256: 'SHA256withRSA',
-        RS384: 'SHA384withRSA',
-        RS512: 'SHA512withRSA',
-        ES256: 'SHA256withECDSA',
-        ES384: 'SHA384withECDSA',
-        ES512: 'SHA512withECDSA'
+        HS256 = 'HmacSHA256',
+        HS384 = 'HmacSHA384',
+        HS512 = 'HmacSHA512',
+        RS256 = 'SHA256withRSA',
+        RS384 = 'SHA384withRSA',
+        RS512 = 'SHA512withRSA',
+        ES256 = 'SHA256withECDSA',
+        ES384 = 'SHA384withECDSA',
+        ES512 = 'SHA512withECDSA'
     };
 
     public any function init() {
         variables.encodingUtils = new encodingUtils();
-        variables.jss = createObject( 'java', 'java.security.Signature' );
+        variables.jss           = createObject( 'java', 'java.security.Signature' );
         variables.messageDigest = createObject( 'java', 'java.security.MessageDigest' );
         return this;
     }
@@ -23,9 +23,9 @@ component {
         required struct payload,
         required any key,
         required string algorithm,
-        struct headers = { }
+        struct headers = {}
     ) {
-        if ( !algorithmMap.keyExists( algorithm ) ) {
+        if ( !structKeyExists( algorithmMap, algorithm ) ) {
             throw(
                 type = 'jwtcfml.InvalidAlgorithm',
                 message = 'Invalid JWT Algorithm.',
@@ -33,16 +33,16 @@ component {
             );
         }
 
-        var header = { };
-        header.append( headers );
-        header.append( {
-            'typ': 'JWT',
-            'alg': algorithm
+        var header = {};
+        structAppend( header, headers );
+        structAppend( header, {
+            'typ' = 'JWT',
+            'alg' = algorithm
         } );
 
         var duplicatedPayload = duplicate( payload );
         for ( var claim in [ 'iat', 'exp', 'nbf' ] ) {
-            if ( duplicatedPayload.keyExists( claim ) && isDate( duplicatedPayload[ claim ] ) ) {
+            if ( structKeyExists( duplicatedPayload, claim ) && isDate( duplicatedPayload[ claim ] ) ) {
                 duplicatedPayload[ claim ] = encodingUtils.convertDateToUnixTimestamp( duplicatedPayload[ claim ] );
             }
         }
@@ -51,7 +51,7 @@ component {
             encodingUtils.binaryToBase64Url( charsetDecode( serializeJSON( header ), 'utf-8' ) ),
             encodingUtils.binaryToBase64Url( charsetDecode( serializeJSON( duplicatedPayload ), 'utf-8' ) )
         ];
-        var stringToSign = stringToSignParts.toList( '.' );
+        var stringToSign = arrayToList( stringToSignParts, '.' );
 
         return stringToSign & '.' & encodingUtils.binaryToBase64Url( sign( stringToSign, key, algorithm ) );
     }
@@ -59,8 +59,8 @@ component {
     public struct function decode(
         required string token,
         any key,
-        any algorithms = [ ],
-        struct claims = { },
+        any algorithms = [],
+        struct claims = {},
         boolean verify = true
     ) {
         var parts = listToArray( token, '.' );
@@ -76,14 +76,14 @@ component {
         algorithms = isArray( algorithms ) ? algorithms : [ algorithms ];
 
         var decoded = {
-            header: deserializeJSON( charsetEncode( encodingUtils.base64UrlToBinary( parts[ 1 ] ), 'utf-8' ) ),
-            payload: deserializeJSON( charsetEncode( encodingUtils.base64UrlToBinary( parts[ 2 ] ), 'utf-8' ) )
+            header = deserializeJSON( charsetEncode( encodingUtils.base64UrlToBinary( parts[ 1 ] ), 'utf-8' ) ),
+            payload = deserializeJSON( charsetEncode( encodingUtils.base64UrlToBinary( parts[ 2 ] ), 'utf-8' ) )
         };
 
         if ( verify ) {
             if (
                 !algorithms.find( decoded.header.alg ) ||
-                !algorithmMap.keyExists( decoded.header.alg )
+                !structKeyExists( algorithmMap, decoded.header.alg )
             ) {
                 throw(
                     type = 'jwtcfml.InvalidAlgorithm',
@@ -111,15 +111,15 @@ component {
             }
 
             var baseClaims = {
-                'exp': true,
-                'nbf': true
+                'exp' = true,
+                'nbf' = true
             };
-            baseClaims.append( claims );
+            structAppend( baseClaims, claims );
             verifyClaims( decoded.payload, baseClaims );
         }
 
         for ( var claim in [ 'iat', 'exp', 'nbf' ] ) {
-            if ( decoded.payload.keyExists( claim ) ) {
+            if ( structKeyExists( decoded.payload, claim ) ) {
                 decoded.payload[ claim ] = encodingUtils.convertUnixTimestampToDate( decoded.payload[ claim ] );
             }
         }
@@ -220,8 +220,6 @@ component {
                 detail = 'The passed in token has not yet become valid.'
             );
         }
-
-
 
         if ( structKeyExists( claims, 'iss' ) ) {
             if ( !structKeyExists( payload, 'iss' ) || compare( payload.iss, claims.iss ) != 0 ) {
