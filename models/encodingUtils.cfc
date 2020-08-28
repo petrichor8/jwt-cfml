@@ -189,7 +189,7 @@ component output="false" {
 
     function parseJWK( required struct jwk ) {
         if ( jwk.kty == 'RSA' ) {
-            if ( jwk.keyExists( 'd' ) ) {
+            if ( structKeyExists(jwk, 'd' ) ) {
                 try {
                     var bigInts = bigIntegers( jwk, [ 'n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi' ] );
                     var keySpec = createObject( 'java', 'java.security.spec.RSAPrivateCrtKeySpec' ).init(
@@ -232,7 +232,7 @@ component output="false" {
             var kf = createObject( 'java', 'java.security.KeyFactory' ).getInstance( 'EC' );
             var ECParameterSpec = getECParameterSpec( jwk.crv );
 
-            if ( jwk.keyExists( 'd' ) ) {
+            if ( structKeyExists(jwk, 'd' ) ) {
                 var bigInts = bigIntegers( jwk, [ 'd' ] );
                 var ks = createObject( 'java', 'java.security.spec.ECPrivateKeySpec' ).init(
                     bigInts.d,
@@ -263,7 +263,7 @@ component output="false" {
     }
 
     private function getECParameterSpec( crv ) {
-        if ( !variables.ECParameterSpecCache.keyExists( crv ) ) {
+        if ( !structKeyExists(variables.ECParameterSpecCache, crv ) ) {
             var kpg = createObject( 'java', 'java.security.KeyPairGenerator' ).getInstance( 'EC' );
             var ecgp = createObject( 'java', 'java.security.spec.ECGenParameterSpec' ).init(
                 'secp#crv.listLast( '-' )#r1'
