@@ -82,7 +82,7 @@ component output = "false" {
 
         if ( verify ) {
             if (
-                !algorithms.find( decoded.header.alg ) ||
+                !arrayFind(algorithms, decoded.header.alg ) ||
                 !structKeyExists( algorithmMap, decoded.header.alg )
             ) {
                 throw(
@@ -233,7 +233,7 @@ component output = "false" {
 
         if ( structKeyExists( claims, 'aud' ) ) {
             var audArray = isArray( claims.aud ) ? claims.aud : [ claims.aud ];
-            if ( !structKeyExists( payload, 'aud' ) || !audArray.find( payload.aud ) ) {
+            if ( !structKeyExists( payload, 'aud' ) || !arrayFind(audArray, payload.aud ) ) {
                 throw(
                     type = 'jwtcfml.InvalidAudience',
                     message = 'Token has an invalid audience',
