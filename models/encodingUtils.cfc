@@ -136,7 +136,7 @@ component output="false" {
         }
 
         var binaryKey = binaryDecode(
-            trim( pemKey ).reReplace( '-----[A-Z\s]+-----', '', 'all' ).reReplace( '[\r\n]', '', 'all' ),
+            reReplace( reReplace( trim( pemKey ), '-----[A-Z\s]+-----', '', 'all' ), '[\r\n]', '', 'all' ),
             'base64'
         );
 
